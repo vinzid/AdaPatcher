@@ -4,22 +4,17 @@ from tqdm import tqdm
 from collections import defaultdict
 import argparse
 def mergeJsonByTag(Json1Path, Json2Path, tag_list, SavePath):
-    #2提取信息到1中
-    # 读取文件1
+
     with open(Json1Path, 'r') as f1:
         data1 = json.load(f1)
 
-    # 读取文件2
     with open(Json2Path, 'r') as f2:
         data2 = json.load(f2)
 
-    # 创建一个字典用于快速查找文件1中的记录
     data1_dict = {item['submission1_id']: item for item in data1}
-
-    # 创建一个字典用于快速查找文件2中的记录
     data2_dict = {item['submission1_id']: item for item in data2}
 
-    # 遍历文件2中的每个记录，并插入对应的 tag_list
+    # Iterate over each record in file 2 and insert the corresponding tag_list
     data_list = []
     print(f"before merge {len(data_list)}")
     for record in data2:
@@ -32,17 +27,12 @@ def mergeJsonByTag(Json1Path, Json2Path, tag_list, SavePath):
             record_item["removed_lines"] = 0
             data_list.append(record_item)
     print(f"after merge {len(data_list)}")
-    # 将合并后的结果保存到一个新的文件
     save_data_to_json(data_list, SavePath)
-    print(f"合并完成，结果已保存到 {SavePath}文件中。")
-
 
 
 def load_json(file_path):
     with open(file_path, 'r') as file:
         return json.load(file)
-
-
 
 def update_code2_values(source_json, target_json):
     source_dict = {record['submission1_id']: record['code2'] for record in source_json}
@@ -54,57 +44,12 @@ def update_code2_values(source_json, target_json):
     
     return target_json
     
-def fugai(source_json_path, target_json_path):
-
-
-    source_json = load_json(source_json_path)
-    target_json = load_json(target_json_path)
-
-    # Update code2 values in target JSON
-    updated_target_json = update_code2_values(source_json, target_json)
-
-    save_data_to_json(updated_target_json, target_json_path)
-    print(f"合并完成，结果已保存到 {target_json_path}文件中。")
-    
-
-def filtDdata(data_path, left_data_save_path):
-     #2提取信息到1中
-    # 读取文件1
-    with open(data_path, 'r') as f1:
-        Large_data = json.load(f1)
-
-    double_dict = {}
-    for item in Large_data:
-        SID = item['submission1_id']
-        if "FL" in SID:
-            SID = SID[:-3]
-        if SID not in double_dict:
-            double_dict[SID] = 1
-        else:
-            double_dict[SID] += 1
-
-    # 遍历文件2中的每个记录，并插入对应的 tag_list
-    data_list = []
-    print(f"Large_data {len(Large_data)}")
-    print(f"double_dict {len(double_dict)}")
-    for record in Large_data:
-        record_id = record['submission1_id']
-        if "FL" in record_id: #or double_dict[record_id] == 2: continue
-            data_list.append(record)
-
-    print(f"after filt {len(data_list)}")
-    # 将合并后的结果保存到一个新的文件
-    save_data_to_json(data_list, left_data_save_path)
-    print(f"过滤完成，结果已保存到 {left_data_save_path}文件中。")
-    return 
 
 def mergeJson(Json1Path, Json2Path, SavePath):
-    #2提取信息到1中
-    # 读取文件1
+
     with open(Json1Path, 'r') as f1:
         data1 = json.load(f1)
     print(len(data1))
-    # 读取文件2
     with open(Json2Path, 'r') as f2:
         data2 = json.load(f2)
     print(len(data2))
@@ -112,7 +57,7 @@ def mergeJson(Json1Path, Json2Path, SavePath):
         data1.append(item)
     print(len(data1))
     save_data_to_json(data1, SavePath)
-    print(f"过滤完成，结果已保存到 {SavePath}文件中。")
+    print(f"Filtering is complete and the result is saved to the {SavePath} file.")
 
 
 def FiltRepeatPreferDataByTag(crflp_path, SavePath, Tag='crp_content'):
@@ -123,7 +68,7 @@ def FiltRepeatPreferDataByTag(crflp_path, SavePath, Tag='crp_content'):
 
     grouped_data = defaultdict(list)
     
-    # 按 submission1_id 分组
+    # Group by submission1_id
     for d in dataset_list:
         SId = d['submission1_id'].split('-')[0]
         grouped_data[SId].append(d)
@@ -131,7 +76,6 @@ def FiltRepeatPreferDataByTag(crflp_path, SavePath, Tag='crp_content'):
     filtered_list = []
     ONE_count = 0
     count = 0
-    # 对每组数据进行去重
     for group in grouped_data.values():
         seen_scontent = set()
         Count = 0
@@ -157,7 +101,6 @@ def FiltRepeatPreferDataByTag(crflp_path, SavePath, Tag='crp_content'):
     print(f"count = {count}")
     print(len(filtered_list))
     save_data_to_json(filtered_list, SavePath)
-    print(f"过滤完成，结果已保存到 {SavePath}文件中。")
 
 def ConstructPreferDataset(dataset_path, FirstCRP_path, Exc_PerferDate_path, save_path):
     '''
@@ -183,7 +126,6 @@ def ConstructPreferDataset(dataset_path, FirstCRP_path, Exc_PerferDate_path, sav
 
     with open(Exc_PerferDate_path, 'r') as f1:
         PerferData_list= json.load(f1)
-    # 创建一个字典用于快速查找文件1中的记录
     dataset_dict = {item['submission1_id']: item for item in dataset_list}
     FirstCRPData_dict = {item['submission1_id']: item for item in FirstCRPData_list}
 
@@ -191,21 +133,19 @@ def ConstructPreferDataset(dataset_path, FirstCRP_path, Exc_PerferDate_path, sav
 
     grouped_data = defaultdict(list)
     
-    # 按 submission1_id 分组
+    #submission1_id 
     for d in PerferData_list:
         SId = d['submission1_id'].split('-')[0]
         grouped_data[SId].append(d)
     
     filtered_list = []
     count = 0
-    # 对每组数据选择
+
     for Sid, group in grouped_data.items():
   
         data = dataset_dict[Sid]
-        # print(data)
-        # input()
+
         code1_test_score = data['code1_test_score']
-        total_score = data['total_score']
         max_score1 = -1
         min_score2 = 999
         max_idx = -1
@@ -230,7 +170,7 @@ def ConstructPreferDataset(dataset_path, FirstCRP_path, Exc_PerferDate_path, sav
             filtered_list.append(data)
 
     save_data_to_json(filtered_list, save_path)
-    print(f"完成，结果已保存到 {save_path}文件中。")
+
        
 def splitDataset(input_path, trian_path, dev_path):
     with open(input_path, 'r') as f1:

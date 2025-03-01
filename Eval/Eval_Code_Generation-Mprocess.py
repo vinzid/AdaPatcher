@@ -16,7 +16,7 @@ class EvalProcess:
         self.EvalOject_path = EvalOject_Path
         self.EvalOject_List = load_list_from_json(self.EvalOject_path)
 
-        # 提取文件名并去掉扩展名
+        # Extract the file name and remove the extension
         file_name_with_ext = os.path.basename(EvalOject_Path)
         file_name = os.path.splitext(file_name_with_ext)[0]
         self.resotreFile_Path = Write_prefix_url + f"Exec_{file_name}.json"
@@ -24,14 +24,14 @@ class EvalProcess:
         self.language = language
         self.worker = Worker()
         self.checker = Checker()
-        FileHandlerSingleton.initialize()     # 初始化文件共享对象
+        FileHandlerSingleton.initialize()     # Initialize a file sharing object
 
  
 
     def AddPsubmitResult2item(self, Psubmit, item):
 
         TotalScore = len(Psubmit.CheckRunResultList)
-        # 定义结果到分数的映射
+        # Define the mapping of results to scores
         result_mapping = {
             'Accepted': 1,
             'Time Limit Exceeded': -1,
@@ -41,9 +41,9 @@ class EvalProcess:
             'Wrong Answer': 0
         }
         
-        # 使用映射进行转换
+        # Transform using maps
         CheckRunResultList = [result_mapping[result] for result in Psubmit.CheckRunResultList]
-        # 计算Score
+        # calculate Score
         Score = CheckRunResultList.count(1)
         item["code_test_status"] = CheckRunResultList
         item["code_test_score"] = Score
@@ -65,20 +65,20 @@ class EvalProcess:
             return 
         Test_List = Quesion_Test_Point_objectList()
         Test_List.inint_Tlist_by_FileHandlerSingleton(FileDirectory=test_directory_path)
-        #跑code_content填充结果
+        #Run code_content to fill in the result
         submission1_id = item["submission1_id"]
         Compile_File_name = f"{submission1_id}.py"
         CodeContent =  item["code_content"]
         Psubmit = Program_Submission(Compile_File_name, CodeContent, self.language)
         
-        self.worker.Run_Program_By_One_All_Point(Psubmit, Test_List, deBug = False) #hhh
+        self.worker.Run_Program_By_One_All_Point(Psubmit, Test_List, deBug = False) 
         self.checker.Check_Run_Result(Psubmit, Test_List)
         self.AddPsubmitResult2item(Psubmit,item)
         return item
     
         
     def ProcessAllData(self):
-        with multiprocessing.Pool(processes=4) as pool:  # 设置进程池大小为8
+        with multiprocessing.Pool(processes=4) as pool:  # Example Set the process pool size to 4
             ResultDataList =  list(tqdm(pool.imap(self.Process_For_Single_EvalObject, self.EvalOject_List), total=len(self.EvalOject_List), desc="Processing elements"))
 
         save_data_to_json(ResultDataList, self.resotreFile_Path)

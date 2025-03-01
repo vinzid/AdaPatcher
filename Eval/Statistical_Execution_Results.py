@@ -25,8 +25,6 @@ def count_matching_scores(file_path, pattern, ChooseSID_path, second_eval_patter
         SId = item['submission1_id']
         if pattern == "test" and SId not in SIDSet: continue
        
-
-
         if pattern == "dev":
             if second_eval_pattern == "dev_1":
                 if "FL" in SId: continue
@@ -74,24 +72,15 @@ def count_matching_scores(file_path, pattern, ChooseSID_path, second_eval_patter
                         s = item['code1_lines']
                         AC_overall_rate +=  (s-b)*1.0/(s+a-b)
 
-                
-
         TotalCount += 1
     if RR_TAG == True:
-        avg_retention_rate = Total_retention_rate/TotalCount
         avg_overall_rate =  Total_overall_rate/TotalCount
         
-        avg_AC_retention_rate = AC_retention_rate/count
-        avg_AC_overall_rate =  AC_overall_rate/count
-        print("#retention_rate-------")
+        print("#consistency_rate-------")
         print(f"TotalCount = {TotalCount}")
         print(f"Total_overall_rate = {Total_overall_rate}")
         print(f"avg_overall_rate = {avg_overall_rate}")
-        # print(f"avg_AC_overall_rate = {avg_AC_overall_rate}")
-        # print(f'avg_retention_rate = {avg_retention_rate}')
-        # print(f'avg_AC_retention_rate = {avg_AC_retention_rate}')
         print(f"same_count= {same_count}")
-        #print(f"same_count_in_AC= {same_count_in_AC}")
         print("-------")
 
     print(f'TotalCount = {TotalCount}')
@@ -108,7 +97,6 @@ def cal_rate(baseResultList, newResultList, TotalScore, base_test_score):
     # Use list comprehensions to turn elements less than 0 into 0
     newResultList = [x if x >= 0 else 0 for x in newResultList]
     
-    
     if len(baseResultList) != len(newResultList):
         raise ValueError("two list have diffrent length")
     count = 0
@@ -120,8 +108,6 @@ def cal_rate(baseResultList, newResultList, TotalScore, base_test_score):
             count += 1
     if flag == False:
         count = 0
-    #if count == 0:
-    #    flag = False
 
     rate = count*1.0/(TotalScore-base_test_score)
     return flag, rate, count
@@ -151,7 +137,6 @@ def cal_improve_rate(data_path, file_path, pattern, ChooseSID_path = None, secon
     ErrorCount = 0
     recordCount = 0
     IRCount = 0
-    Improve_retention_rate=0
     Improve_overall_rate=0
     if "retention_rate" in file_list[0]:
         RR_TAG = True
@@ -188,7 +173,6 @@ def cal_improve_rate(data_path, file_path, pattern, ChooseSID_path = None, secon
         else:
             
             if RR_TAG == True and impove_Testcount != 0:
-                Improve_retention_rate+= item['retention_rate']
                 a = item['added_lines']
                 b = item['removed_lines']
                 s = item['code1_lines']
@@ -201,11 +185,10 @@ def cal_improve_rate(data_path, file_path, pattern, ChooseSID_path = None, secon
 
     ErrorRate = ErrorCount*1.0/recordCount
     if RR_TAG == True:
-        avg_Improve_retention_rate = Improve_retention_rate*1.0/(IRCount)
         avg_Improve_overall_rate = Improve_overall_rate*1.0/(IRCount)
-        print("\n##Improve_retention_rate-----------")
+        print("\n##Improve_consistency_rate-----------")
         print(f">>>avg_Improve_overall_rate = {avg_Improve_overall_rate}")
-        print(f">>>avg_Improve_retention_rate = {avg_Improve_retention_rate}")
+  
         print("-----------")
 
     print(f">>>recordCount = {recordCount}")

@@ -104,10 +104,6 @@ class RecordProcess:
             if flag == False:
                 AC2Wrong_data_count += 1
                 continue
-            # print(Psubmit)
-            # print(item["problem_id"])
-            # print(len(Psubmit.CheckRunResultList))
-            #放入数据
             
             ResultDataList.append(item)
 

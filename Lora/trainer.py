@@ -34,10 +34,6 @@ def compute_metrics(prediction: EvalPrediction):
     
     return {"Preference total Acc": all_acc.item(), "First-two Acc": first_two_acc.item()}
 
-
-
-
-
 def gather_all_with_local_grad(tensor, dim=0):
     local_rank = torch.distributed.get_rank()
 
@@ -63,7 +59,6 @@ class ModelTrainer(Trainer):
         
         return (loss, logits, labels)
 
-                
     def compute_loss(self, model, inputs, return_outputs=False):
         device = model.device
         input_ids = inputs['input_ids'].to(device)
@@ -83,14 +78,8 @@ class ModelTrainer(Trainer):
         )
 
         hidden_states = outputs['hidden_states'] # shape [bs*r, seq_length, dim]
-        
         #batch_logits = outputs['rm_logits'].view(batch_size, sample_num)
-       
-
         lm_loss = outputs['loss']
-
-
-
         if self.args.debug_mode:
             print_rank_0(f">>> debug")
             print_rank_0(f">>> Language modeling loss {lm_loss}")

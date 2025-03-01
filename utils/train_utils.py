@@ -63,14 +63,11 @@ def load_model_checkpoint(model, rank,cfg):
  
  
 
-   
 def train(model, train_dataloader,eval_dataloader, tokenizer, gradient_accumulation_steps, train_config, fsdp_config=None, local_rank=None, rank=None):
     """
     Trains the model on the given dataloader
     """
-  
-   
-    
+
     if train_config.enable_fsdp:
         world_size = int(os.environ["WORLD_SIZE"])
 
@@ -100,15 +97,10 @@ def train(model, train_dataloader,eval_dataloader, tokenizer, gradient_accumulat
         total_length = len(train_dataloader)//gradient_accumulation_steps
         pbar = tqdm(colour="blue", desc=f"Training Epoch: {epoch+1}", total=total_length, dynamic_ncols=True)
         for step, batch in enumerate(train_dataloader):
-
-            
+ 
             input_ids = batch['input_ids'].to(local_rank)
             attention_mask = batch['attention_mask'].to(local_rank)
-            # print(input_ids.shape)
-            # print(attention_mask.shape)
-            # print(input_ids)
-            # print(attention_mask)
-            # input()
+
             if train_config.use_peft == True:
                 result = model(input_ids,attention_mask,labels = input_ids)
                 loss = result.loss

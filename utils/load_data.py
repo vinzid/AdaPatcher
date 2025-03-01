@@ -17,52 +17,44 @@ B_SYS, E_SYS = "<<SYS>>\n", "\n<</SYS>>\n\n"
 
 
 def create_token_labels(token_ids, tokenizer, seq_length, special_tokens=['-', '+']):
-    # 使用分词器对文本进行分词
-    #token_ids = tokenizer.convert_tokens_to_ids(tokens)
-    
-    # 初始化一个与Token数目相同的mask列表
+
+    # Initializes a list of masks with the same number of tokens
     mask = [-100] * seq_length
     #print(f"seq_length = {seq_length}")
-    # 遍历每个Token，检查它是否对应于特定字符
+    # Iterate over each Token to see if it corresponds to a particular character
     LineBreakTokenID = tokenizer.convert_tokens_to_ids(tokenizer.tokenize('\n'))[-1]
     special_tokenIDs = tokenizer.convert_tokens_to_ids(special_tokens)
     before_Token_id = 0
 
     for idx, token_id in enumerate(token_ids):
-        #print(f"idx = {idx} token_id = {token_id}")
+
         if idx == 0:
             if any(special_token_id == token_id for special_token_id in special_tokenIDs):
                 mask[idx] = token_id
         else:
             if any(special_token_id == token_id for special_token_id in special_tokenIDs) and before_Token_id == LineBreakTokenID:
                 mask[idx] = token_id
-                #print(f"idx = {idx}")
+
         before_Token_id = token_id
 
 
     return  mask
     
 def create_token_mask(token_ids, tokenizer, seq_length, special_tokens=['-', '+']):
-    # 使用分词器对文本进行分词
-    #token_ids = tokenizer.convert_tokens_to_ids(tokens)
-    
-    # 初始化一个与Token数目相同的mask列表
+
     mask = [0] * seq_length
     #print(f"seq_length = {seq_length}")
-    # 遍历每个Token，检查它是否对应于特定字符
     LineBreakTokenID = tokenizer.convert_tokens_to_ids(tokenizer.tokenize('\n'))[-1]
     special_tokenIDs = tokenizer.convert_tokens_to_ids(special_tokens)
     before_Token_id = 0
 
     for idx, token_id in enumerate(token_ids):
-        #print(f"idx = {idx} token_id = {token_id}")
         if idx == 0:
             if any(special_token_id == token_id for special_token_id in special_tokenIDs):
                 mask[idx] = 1
         else:
             if any(special_token_id == token_id for special_token_id in special_tokenIDs) and before_Token_id == LineBreakTokenID:
                 mask[idx] = 1
-                #print(f"idx = {idx}")
         before_Token_id = token_id
 
 
@@ -74,9 +66,7 @@ class TextDataset(Dataset):
             self.test = test
             self.newloss_pattern = newloss_pattern
         def __getitem__(self, index):
-            
             item = self.data[index]
-            #print("Dataset item:", item)  # 打印获取的数据项
             return item
             #return 
 
@@ -84,7 +74,6 @@ class TextDataset(Dataset):
             return len(self.data)
         
         def collate_batch(self, batch):
-            #print("@@@@ Batch before collate:", batch)  # 打印原始批次数据
 
             input_ids_batch = []
             attention_mask_batch = []
@@ -94,7 +83,7 @@ class TextDataset(Dataset):
             submission1_id_batch = []
             loss_labels_batch = []
             loss_mask_batch = []
-            #print(batch)
+ 
             
             for item in batch:
                 user_id_batch.append(item['user_id'])
@@ -106,16 +95,13 @@ class TextDataset(Dataset):
             input_ids_batch = encoded_inputs["input_ids"]
             labels_batch = input_ids_batch.clone()
             attention_mask_batch = encoded_inputs["attention_mask"]
-            #tokens_batch =self.tokenizer.convert_ids_to_tokens(input_ids_batch[0])
 
             batch_size, seq_length = attention_mask_batch.shape
             if self.newloss_pattern == True:
                 for input_ids in input_ids_batch:
                     loss_mask = create_token_mask(input_ids, self.tokenizer, seq_length)
-                    #loss_labels = create_token_labels(input_ids, self.tokenizer, seq_length)
-                    #loss_labels_batch.append(loss_labels)
                     loss_mask_batch.append(loss_mask)
-                #loss_labels_batch = torch.Tensor(loss_labels_batch).long()
+
                 loss_mask_batch = torch.Tensor(loss_mask_batch).long()
 
             if self.test == False:
@@ -336,7 +322,7 @@ class processClass:
                 new_items['code2'] = items[i]['diff_content']
                 new_items['input'] = self.get_instruction(problem_content[i], new_items['code1'], new_items['code2'], language, is_test,prompt_pattern) 
                 text = tokenizer(new_items['input'],return_tensors='pt')
-                if is_test is False and text['input_ids'].shape[1] > 2048: continue #训练数据过长不要了 
+                if is_test is False and text['input_ids'].shape[1] > 2048: continue #The training data is too long 
             elif prompt_pattern == "fixbycrp" or prompt_pattern == "fixbycrflp":
                 new_items['code2'] = items[i]['code2']
 
@@ -351,7 +337,6 @@ class processClass:
 
             elif "CRP" == prompt_pattern or "CRFLP" in prompt_pattern:
                 CRP_Content = items[i]['FL_content']
-                #if len(CRP_Content) > 512:continue
                 new_items['input'] = self.get_instruction(problem_content[i], new_items['code1'], None, language, is_test,prompt_pattern,
                 CRPContent = CRP_Content) 
                 text = tokenizer(new_items['input'],return_tensors='pt')
@@ -401,7 +386,6 @@ class processClass:
             data_list = json.load(f)
         return data_list
 
-    #获取部分还是全部数据
     def get_data_iter(self,data_list, debug=False, is_test=False):
         if debug:
             data_size = len(data_list)
@@ -410,13 +394,9 @@ class processClass:
             else :
                 up_data_size = 6
             data_list = [data_list[i] for i in range(up_data_size)] #min(int(0.1*data_size), up_data_size
-   
-        #if (not torch.distributed.is_initialized()) or (torch.distributed.get_rank() == 0):
-        #    return tqdm(data_list)
-        #else:
         return data_list
         
-    #可能根据test和train的不同修改成对应的数据内容 字段名可以一致但内容不同
+    #The corresponding data content field name can be the same but the content is different according to the difference of test and train
     def load_dataset(self,language, problem_path, data_path, CRPdata_path = None, tokenizer=None, debug=False, padding=False, batch_size = 1,is_test=False, \
         prompt_pattern="normal",rank = 0, pattern = None, use_predict_crp = False):
         if rank == 0:
@@ -434,8 +414,6 @@ class processClass:
                     crp_map[item['submission1_id']] = item['crp_content'] #是 crp_content 
                 for item in data_list:
                     item['crp_content'] = crp_map[item['submission1_id']]
-
-
 
         problem_map = dict()
         for item in problem_list:

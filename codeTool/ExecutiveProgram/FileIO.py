@@ -2,15 +2,17 @@ import os
 import re
 import multiprocessing
 from multiprocessing import Manager, Lock
-# Manager().dict() 提供了一个共享的字典，可以在多个进程间安全地存储和访问单例实例。Lock 确保只有一个进程能够同时修改共享字典，从而避免竞态条件。
-# 在多进程环境中使用 multiprocessing.Manager 和 Lock 实现单例模式时，_instances 和 _lock 是需要在主进程中初始化的。
-# 原因是 multiprocessing.Manager 创建的共享对象（如 Manager().dict()) 和 multiprocessing.Lock 需要在主进程中创建，以便它们能够在子进程之间共享。
-# 如果不在主进程中初始化这些对象，可能会导致子进程无法正确共享它们。
-# 但你可以在类定义中提供初始化方法来初始化这些共享对象，然后在主程序中调用该方法来进行初始化。这样可以使代码更清晰，并确保 _instances 和 _lock 在主进程中正确初始化。
+# `Manager().dict()` provides a shared dictionary that allows safe storage and access to a singleton instance across multiple processes.
+# The `Lock` ensures that only one process can modify the shared dictionary at a time, thus preventing race conditions.
+# When using `multiprocessing.Manager` and `Lock` to implement the singleton pattern in a multi-process environment, `_instances` and `_lock` need to be initialized in the main process.
+# The reason is that shared objects created by `multiprocessing.Manager` (such as `Manager().dict()`) and `multiprocessing.Lock` must be created in the main process so they can be shared between child processes.
+# If these objects are not initialized in the main process, it may lead to issues where child processes cannot correctly share them.
+# However, you can provide an initialization method in the class definition to initialize these shared objects, and then call this method in the main program to perform the initialization.
+# This approach can make the code clearer and ensure that `_instances` and `_lock` are properly initialized in the main process.
 class FileHandlerSingleton:
-    # 用于存储每个文件名对应的单例实例 filename对应一个class实体 （P0010)
-    _instances = None  # 用于存储每个文件名对应的单例实例
-    _lock = None  # 锁对象，用于进程间同步
+    # The singleton instance filename used to store each filename corresponds to a class entity （P0010)
+    _instances = None  # Used to store singleton instances for each file name
+    _lock = None  # Lock object, used for interprocess synchronization
 
     @classmethod
     def initialize(cls):
@@ -20,13 +22,13 @@ class FileHandlerSingleton:
             cls._lock = Lock()
 
     def __new__(cls, directory):
-        abs_directory = os.path.abspath(directory)  # 获取目录的绝对路径
+        abs_directory = os.path.abspath(directory)  # Gets the absolute path to the directory
         with cls._lock:
             if abs_directory not in cls._instances:
                 instance = super(FileHandlerSingleton, cls).__new__(cls)
                 instance.directory = abs_directory
                 instance.input_files, instance.output_files = cls.read_text_files(abs_directory)
-                # 存储简单的数据结构而不是整个实例
+                # Store simple data structures instead of entire instances
                 cls._instances[abs_directory] = {
                     'directory': abs_directory,
                     'input_files': instance.input_files,
@@ -37,7 +39,7 @@ class FileHandlerSingleton:
     def __init__(self, directory):
         with self._lock:
             if not hasattr(self, 'initialized'):
-                self.directory = os.path.abspath(directory)  # 获取目录的绝对路径
+                self.directory = os.path.abspath(directory)  # Gets the absolute path to the directory
                 self.input_files, self.output_files = self.read_text_files(self.directory)
                 self.initialized = True
 
@@ -59,7 +61,7 @@ class FileHandlerSingleton:
                     elif file_type == 'output':
                         output_files[int(index)] = file.read()
 
-        # 按键排序并转换为有序字典
+        # Keystrokes sort and convert to an ordered dictionary
         input_files = dict(sorted(input_files.items()))
         output_files = dict(sorted(output_files.items()))
 
@@ -79,17 +81,17 @@ def process_function(directory):
     print(instance_info['output_files'])
 
 if __name__ == '__main__':
-    # 初始化共享对象
+    # Example Initialize the shared object
     FileHandlerSingleton.initialize()
 
-    # 确认工作目录和路径
+    # Confirm the working directory and path
     test_directory = '/home/develop/dzl/CodeFixProject/CodeDatasets/merged_test_cases/p03391'
     if not os.path.exists(test_directory):
         raise FileNotFoundError(f"Directory {test_directory} does not exist")
 
-    # 创建多个进程
+    # Create multiple processes
     processes = []
-    for i in range(2):  # 使用 2 个进程进行测试
+    for i in range(2):  # Test with 2 processes
         p = multiprocessing.Process(target=process_function, args=(test_directory,))
         processes.append(p)
         p.start()

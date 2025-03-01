@@ -44,8 +44,6 @@ def print_rank_0(message):
 
 
 
-
-
 def gather_all_with_local_grad(tensor, dim=0):
     local_rank = torch.distributed.get_rank()
 
@@ -76,21 +74,19 @@ def language_modeling_loss0(logits, labels, eps=1e-7):
 def language_modeling_loss1(lm_logits, labels, attention_mask, eps=1e-7):
     batch_size, seq_length, vocab_size = lm_logits.shape
     num_ignore_labels = torch.sum(labels[:, 1:] == -100, dim=1).float()
-    # 计算逐位置的交叉熵损失
+    # Calculate the cross entropy loss by position
     lm_probs = F.cross_entropy(
         input=lm_logits[:, :-1, :].reshape(-1, vocab_size), 
         target=labels[:, 1:].reshape(-1),
         reduction='none'
     ).view(batch_size, -1)
-    # 计算加权损失 一般会计算batch内包括padding位置(attention_mask.shape[-1] seq_length) 所以不一致 attention_mask 1的位置
+    # The weight loss calculation usually calculates the positions in the batch that are inconsistent with attention_mask 1 because the padding position (attention_mask.shape[-1] seq_length) is included
     loglikeli = (lm_probs * attention_mask[:, 1:].float()).sum(dim=-1) / (attention_mask[:, 1:].float().sum(dim=-1)-num_ignore_labels)#seq_length #(attention_mask[:, 1:].float().sum(dim=-1))
     return loglikeli.mean()
-    
-    
+       
 # llm loss
 def language_modeling_loss2(lm_logits, labels, eps= 1e-7): 
     batch_size, seq_length, vocab_size = lm_logits.shape
-    
     lm_probs = torch.nn.functional.cross_entropy(
         input=lm_logits[:, :-1,:].reshape(-1, vocab_size), 
         target=labels[:, 1:].reshape(-1),
@@ -100,7 +96,7 @@ def language_modeling_loss2(lm_logits, labels, eps= 1e-7):
 
 def language_part_loss(lm_logits, labels, mask, debug = False, eps= 1e-7): 
     batch_size, seq_length, vocab_size = lm_logits.shape
-    # 计算逐位置的交叉熵损失
+    # Calculate the cross entropy loss by position
     lm_probs = F.cross_entropy(
         input=lm_logits[:, :-1, :].reshape(-1, vocab_size), 
         target=labels[:, 1:].reshape(-1),
@@ -111,54 +107,37 @@ def language_part_loss(lm_logits, labels, mask, debug = False, eps= 1e-7):
     valid_mask = (labels != -100).float()
     if mask is not None:
         valid_mask = valid_mask * mask
-    #valid_loss = loss_none[valid_mask]
-    #mean_loss = valid_loss.mean()
 
-    # if debug == True:
-    #     num_ones = torch.sum(valid_mask)
-    #     print(f"num_ones = {num_ones}")
-
-    #     # 找到 loss_mask 中值为 1 的位置
-    #     mask_indices = torch.nonzero(valid_mask[:, 1:] == 1)
-    #     print(f"Number of 1s in valid_mask: {torch.sum(valid_mask == 1).item()}")
-    #     print(f"Indices of 1s in valid_mask:\n{mask_indices}")
-        
-    #     #打印对应的 lm_probs 值
-    #     masked_lm_probs = lm_probs[mask_indices[:, 0], mask_indices[:, 1]]
-    #     for idx in range(len(mask_indices)):
-    #         print(f"Position: {mask_indices[idx].tolist()}, lm_probs: {masked_lm_probs[idx].item()}")
-    
-    #计算加权损失 一般会计算batch内包括padding位置(attention_mask.shape[-1] seq_length) 所以不一致 attention_mask 1的位置
+    # The weight loss calculation usually calculates the positions in the batch that are inconsistent with attention_mask 1 because the padding position (attention_mask.shape[-1] seq_length) is included
     loglikeli = (lm_probs * valid_mask[:, 1:].float()).sum() / (batch_size*(seq_length-1)-total_num_ignore_labels)#seq_length #(attention_mask[:, 1:].float().sum(dim=-1))
     return loglikeli
 
 class ModelTrainer(Trainer):
      
-    
     def get_train_dataloader(self) -> DataLoader:
-        # 确保父类中的方法被正确调用（如果需要）
-        # 如果原来的 Trainer 类中已经有这个方法，你可以用 super() 调用它：
+        # Make sure the methods in the parent class are called correctly (if necessary
+        # If this method already exists in the original Trainer class, you can call it with super() :
         # dataloader = super()._get_train_dataloader()
-        # 这里我们手动构建 DataLoader 以进行调试
+        # Here we build the DataLoader manually for debugging
         sampler = DistributedSampler(self.train_dataset)
-        # 添加调试信息
+        # Adding debugging information
         print("Creating train DataLoader:")
         print(f" - Batch size: {self.args.train_batch_size}")
-        print(f" - Shuffle: {sampler.shuffle}")  # DistributedSampler 自动处理 shuffle
+        print(f" - Shuffle: {sampler.shuffle}")  # DistributedSampler Automatically process shuffle
         print(f" - Collate fn: {self.data_collator}")
 
         dataloader = DataLoader(
             self.train_dataset,
             batch_size=self.args.train_batch_size,
-            sampler=sampler,  # 使用 sampler 而不是 shuffle
+            sampler=sampler,  # Use the sampler instead of shuffle
             collate_fn=self.data_collator,
-            num_workers=self.args.dataloader_num_workers,  # 如果有多核处理需求可以设置
+            num_workers=self.args.dataloader_num_workers,  # If there is a need for multi-core processing can be set
         )
 
-        # 检查 DataLoader 是否正确初始化
+        # Check that the DataLoader is initialized correctly
         for i, batch in enumerate(dataloader):
             print(f"Sample batch {i} from DataLoader: {batch}")
-            if i > 0:  # 只打印几个批次来检查
+            if i > 0:  # Print only a few batches to check
                 break
 
         return dataloader
@@ -204,7 +183,7 @@ class ModelTrainer(Trainer):
             #loss_labels = inputs['loss_labels'].to(device)
             loss_mask = inputs['loss_mask'].to(device)
             logits = outputs.logits
-            # 创建目标标签（假设目标标签与输入相同）  
+            # Create the target tag (assuming the target tag is the same as the input) 
             part_loss = language_part_loss(logits, labels, loss_mask, self.args.debug_mode)
             if self.args.debug_mode:
                 print_rank_0(f">>> Language modeling loss before {loss}")

@@ -1,7 +1,6 @@
 # AdaPatcher
 ### Paper Title: Adaptive Program Repair with Bug Localization and Preference Learning
-<!-- ![picture description](./images/method.png)
-Overview of AdaPatcher:(a) Illustration of the Self-Debug Learning process. (b) Illustration of the Hybrid Training for Selective Reference process. (c) Illustration of the Adaptive Preference Learning process. -->
+
 <figure>
   <img src="./images/method.png" alt="picture description" />
   <figcaption>Overview of AdaPatcher:(a) Illustration of the Self-Debug Learning process. (b) Illustration of the Hybrid Training for Selective Reference process. (c) Illustration of the Adaptive Preference Learning process.</figcaption>
@@ -31,7 +30,7 @@ Update as soon as possible...
 Download it and place it in the directory ./merged_test_cases.
 #### 2. Programming problem file
 Update as soon as possible...
-file in  ./repairDataset/Program_Question_Data/English_Program_Question_StringVersion5.json
+Problem file in  ./repairDataset/Program_Question_Data/English_Program_Question_StringVersion.json
 #### 3. train/dev/test file
 Update as soon as possible...
 file in  the directory ./repairDataset/RepairData-PythonLevel/CRFLPDataset/
@@ -43,11 +42,13 @@ View codeTool/use.md
 Please download the pre-trained [CodeLlama-7b-Instruct-hf](https://huggingface.co/codellama/CodeLlama-7b-Instruct-hf) weights from huggingFace and put it in the same directory "./CodeLlama-7b-Instruct-hf".
 ### Stage I Training
 #### step 1.firstly need train a base Program Modifier(Location-Aware Repair Learning) for eval bug locator
+DATA_FILE="CRFLPDataset"
 ```
 bash script/pipeline/process_fixbycrflp.sh
 ```
 #### step 2.trian bug locator
 The script is executed after specific parameter values are specified based on the result of step 1.
+DATA_FILE="CRFLPDataset"
 ```
 bash script/pipeline/process_trace_CRFLP.sh
 ```
@@ -72,10 +73,10 @@ bash script/Prefer/generate_prefer_data.sh
 ```
 then you should constrcut generation result to training data.
 you can refer to "./utils/ConstructPerferDataset.py", we screened the data pairs with the highest and lowest consistency greater than 0.1 difference.
-You also can directly use perference data "dataNew/FixPerferdataset3"
+You also can directly use perference data "dataNew/FixPerferdataset"
 
 #### step 3.training Program Modifier with Adaptive Preference Learning
-PerferDATA_FILE="dataNew/FixPerferdataset3"
+PerferDATA_FILE="dataNew/FixPerferdataset"
 ```
 bash script/Prefer/process_Prefer_FixModel.sh
 ```

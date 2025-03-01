@@ -17,52 +17,42 @@ B_SYS, E_SYS = "<<SYS>>\n", "\n<</SYS>>\n\n"
 
 
 def create_token_labels(token_ids, tokenizer, seq_length, special_tokens=['-', '+']):
-    # 使用分词器对文本进行分词
-    #token_ids = tokenizer.convert_tokens_to_ids(tokens)
-    
-    # 初始化一个与Token数目相同的mask列表
+
     mask = [-100] * seq_length
-    #print(f"seq_length = {seq_length}")
-    # 遍历每个Token，检查它是否对应于特定字符
     LineBreakTokenID = tokenizer.convert_tokens_to_ids(tokenizer.tokenize('\n'))[-1]
     special_tokenIDs = tokenizer.convert_tokens_to_ids(special_tokens)
     before_Token_id = 0
 
     for idx, token_id in enumerate(token_ids):
-        #print(f"idx = {idx} token_id = {token_id}")
         if idx == 0:
             if any(special_token_id == token_id for special_token_id in special_tokenIDs):
                 mask[idx] = token_id
         else:
             if any(special_token_id == token_id for special_token_id in special_tokenIDs) and before_Token_id == LineBreakTokenID:
                 mask[idx] = token_id
-                #print(f"idx = {idx}")
+
         before_Token_id = token_id
 
 
     return  mask
     
 def create_token_mask(token_ids, tokenizer, seq_length, special_tokens=['-', '+']):
-    # 使用分词器对文本进行分词
-    #token_ids = tokenizer.convert_tokens_to_ids(tokens)
+
     
-    # 初始化一个与Token数目相同的mask列表
     mask = [0] * seq_length
     #print(f"seq_length = {seq_length}")
-    # 遍历每个Token，检查它是否对应于特定字符
     LineBreakTokenID = tokenizer.convert_tokens_to_ids(tokenizer.tokenize('\n'))[-1]
     special_tokenIDs = tokenizer.convert_tokens_to_ids(special_tokens)
     before_Token_id = 0
-
     for idx, token_id in enumerate(token_ids):
-        #print(f"idx = {idx} token_id = {token_id}")
+
         if idx == 0:
             if any(special_token_id == token_id for special_token_id in special_tokenIDs):
                 mask[idx] = 1
         else:
             if any(special_token_id == token_id for special_token_id in special_tokenIDs) and before_Token_id == LineBreakTokenID:
                 mask[idx] = 1
-                #print(f"idx = {idx}")
+
         before_Token_id = token_id
 
 
@@ -73,7 +63,6 @@ class TextDataset(Dataset):
         def __getitem__(self, index):
             item = self.data[index]
             return item
-
 
         def __len__(self,):
             return len(self.data)
@@ -171,7 +160,7 @@ class processClass:
             data_list = json.load(f)
         return data_list
 
-    #获取部分还是全部数据
+ 
     def get_data_iter(self,data_list, debug=False, is_test=False):
         if debug:
             data_size = len(data_list)
@@ -180,13 +169,9 @@ class processClass:
             else :
                 up_data_size = 20000
             data_list = [data_list[i] for i in range(up_data_size)] #min(int(0.1*data_size), up_data_size
-   
-        #if (not torch.distributed.is_initialized()) or (torch.distributed.get_rank() == 0):
-        #    return tqdm(data_list)
-        #else:
         return data_list
         
-    #可能根据test和train的不同修改成对应的数据内容 字段名可以一致但内容不同
+
     def load_dataset(self,language, problem_path, data_path, CRPdata_path = None, tokenizer=None, debug=False, padding=False, batch_size = 1,is_test=False, \
         prompt_pattern="normal",rank = 0, pattern = None, use_predict_crp = False):
         if rank == 0:
@@ -222,9 +207,7 @@ class processClass:
     def get_dataset(self,args, tokenizer, pattern = "train", is_test = False, rank = 0):    
         all_train_data = []
         data_path = self.get_path(args.data_path, pattern)
-        # print(args)
-        # print(args.per_device_train_batch_size)
-        # input()
+
         train_data = self.load_dataset(
             language = args.language,
             problem_path=args.problem_path,
@@ -245,10 +228,6 @@ class processClass:
             print(f">>> check tokenized data:")        
             print(f">>> {all_train_data[0]}")
 
-        #train_set = TextDataset(all_train_data)
-        # dataset = Dataset.from_dict({"prompt": [item["prompt"] for item in all_train_data],\
-        #                               "chosen": [item["chosen"] for item in all_train_data],\
-        #                                "rejected": [item["rejected"] for item in all_train_data] })
         return all_train_data
 
     

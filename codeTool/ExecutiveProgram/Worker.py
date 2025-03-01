@@ -16,15 +16,15 @@ class Program_Submission:
             self.Execute_File_name = f"__pycache__/{Execute_File_name_without_type}.cpython-311.pyc"
         else:
             raise ValueError(">>> language value is wrong")
-        self.Is_Compile = False #是否已被尝试编译（无论失败成功）
-        self.Compile_Status = None #是否编译成功
-        self.CompileResult = None #编译结果Json对象
-        self.stderr = None #编译错误的报错信息
+        self.Is_Compile = False #Whether compilation has been attempted (regardless of failure)
+        self.Compile_Status = None #Compile successfully or not
+        self.CompileResult = None #Compile the result Json object
+        self.stderr = None #Error message for compiling errors
         
         
-        self.ResultStatus = None #最终判题结果
-        self.RunResultList = [] #执行信息list
-        self.CheckRunResultList = [] #单个测试点判题状态List (ac wa TLE MLE OLE) 
+        self.ResultStatus = None #The final judgment result
+        self.RunResultList = [] #Execution information list
+        self.CheckRunResultList = [] #Single test point test status List (ac wa TLE MLE OLE) 
         
     def __str__(self):
         return (f"Compile_File_name: {self.Compile_File_name}\n"
@@ -83,7 +83,7 @@ class Quesion_Test_Point_objectList:
             print(str(self.Tlist[0]))
             print(str(self.Tlist[1]))
             print(str(self.Tlist[2]))
-class Worker: #可重入
+class Worker: #Reentrant function
     def __init__(self):
         self.url_prefix = 'http://127.0.0.1:5050/'
         self.apimanager = APIManager(self.url_prefix)
@@ -103,9 +103,9 @@ class Worker: #可重入
         
     def Run_Program_By_One_Test_Point(self, Psubmit, Test_Point_Input, deBug = False):
         if Psubmit.Is_Compile == False:
-            #编译文件
+            #Compile file
             Json_Text_response = self.apimanager.Compile_Program(Psubmit.Compile_File_name, Psubmit.CodeContent, Psubmit.Language)
-            #解析结果成分存入Psubmit
+            #The parsing result component is stored in Psubmit
             Compile_Result_Data = json.loads(Json_Text_response)
             if Compile_Result_Data[0]["status"] == "File Error":
                 print(Psubmit)
@@ -117,39 +117,39 @@ class Worker: #可重入
                 input()
             self.Extract_Compile_Information(Compile_Result_Data[0], Psubmit)
         
-        #如果编译成功则执行程序
+        #If the compilation succeeds, the program is executed
         if Psubmit.Is_Compile == True and Psubmit.Compile_Status == "Accepted":
-            #执行文件
+            #Executive file
             Json_Text_response = self.apimanager.Execute_Program_After_Compile(Psubmit.CopyIn_fileId, Psubmit.Execute_File_name, Test_Point_Input, Psubmit.Language)
-            #解析结果成分存入Psubmit
+            #The parsing result component is stored in Psubmit
             Run_Result_Data = json.loads(Json_Text_response)
             self.Extract_Execution_Information(Run_Result_Data[0], Psubmit)
 
     def Run_Program_By_One_All_Point(self, Psubmit, TestPointList, deBug = False):
         for item in TestPointList.Tlist:
             self.Run_Program_By_One_Test_Point(Psubmit,item.Test_Point_Input, deBug)
-        #执行完毕删除对应CopyIn_fileId
+        #Delete CopyIn_fileId after the command is complete
         self.apimanager.Delete_File_By_Fileid(Psubmit.CopyIn_fileId)
 
 class Checker:
 
     def Check_consistency(self, str1, str2, deBug = False):
         """
-        进行格式检查，去除两个字符串的多余空白和换行符，并检查它们是否完全一致。
+            Perform a format check to remove excess white space and newlines from both strings and check that they are exactly the same.
 
-        参数:
-        str1 (str): 第一个字符串
-        str2 (str): 第二个字符串
+            Parameters:
+            str1 (str): The first string
+            str2 (str): The second string
 
-        返回:
-        bool: 如果两个字符串处理后完全一致，则返回 True,否则返回 False
+            Back:
+            bool: Returns True if the two strings are identical after processing, False otherwise
         """
         def normalize(s):
-            # 去除每行末尾的空格和换行符
+            # Remove Spaces and newlines at the end of each line
             s = re.sub(r'[ \t]+(?=\n)|(?<=\S)[ \t]+$', '', s, flags=re.MULTILINE)
-            # 去除整篇文本开头和结尾的空格和换行符
+            # Remove Spaces and newlines at the beginning and end of the entire text
             s = s.strip()
-            # 统一换行符为 \n
+            # The uniform newline is \n
             s = s.replace('\r\n', '\n').replace('\r', '\n')
             return s
 
@@ -173,7 +173,7 @@ class Checker:
                     status = item["status"]
                     Psubmit.ResultStatus = status
                 else:
-                    #check 是否一致
+                    #Check for consistency
                     Run_str = item["files"]["stdout"]
                     
                     Real_str = Test_List.Get_Item(i).Test_Point_Output
@@ -189,7 +189,7 @@ class Checker:
 
                         
                 Psubmit.CheckRunResultList.append(status)
-                i += 1 #迭代索引
+                i += 1 #Iterative index
                 
             if  Psubmit.ResultStatus == None:
                 Psubmit.ResultStatus = "Accepted"

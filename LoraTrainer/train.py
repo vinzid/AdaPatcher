@@ -73,13 +73,11 @@ def main(**kwargs):
             }
         ) 
   
-    #tokenizer.pad_token = tokenizer.eos_token
     # load data
     #---------------------------------------------------------------------------------  
     proc = processClass()
     train_data_set = proc.get_dataset(args,tokenizer, "train", is_test = False,rank = rank)
     eval_dataset_set = proc.get_dataset(args,tokenizer,  "dev", is_test = False,rank = rank)
-
     #print("Initial sample from train_dataset:", train_data_set[0])
     #print("Initial batch from data_collator:", train_data_set.collate_batch(train_data_set[0]))
 
@@ -94,10 +92,8 @@ def main(**kwargs):
         )
         peft_config = generate_peft_config(args, kwargs)
         model = get_peft_model(model, peft_config)
-        # 扩展模型的词嵌入层，使其与分词器的词汇表大小一致
         model.resize_token_embeddings(len(tokenizer))
 
-        # 打印模型的词嵌入层和分词器的词汇表大小以验证
         if rank == 0:
             print(f"Model embedding size: {model.get_input_embeddings().weight.size(0)}")
             print(f"Tokenizer vocabulary size: {len(tokenizer)}")
@@ -110,9 +106,7 @@ def main(**kwargs):
             )
             peft_config = generate_peft_config(args, kwargs)
             model = get_peft_model(model, peft_config)
-            # 扩展模型的词嵌入层，使其与分词器的词汇表大小一致
             model.resize_token_embeddings(len(tokenizer))
-            # 打印模型的词嵌入层和分词器的词汇表大小以验证
             print(f"Model embedding size: {model.get_input_embeddings().weight.size(0)}")
             print(f"Tokenizer vocabulary size: {len(tokenizer)}")
             model = LoraCodeLlama(model).cuda()
@@ -124,18 +118,6 @@ def main(**kwargs):
     #---------------------------------------------------------------------------------
 
     if args.do_train:
-        # model, _, _, _  = deepspeed.initialize(args=args, 
-        #                                                           model=model,
-		# 						model_parameters=model.parameters(), 
-        #                         config=args.speedjson)
-        # 创建一个 DataLoader，使用和 Trainer 相同的参数
-        # data_loader = DataLoader(train_data_set, batch_size=2, collate_fn=train_data_set.collate_batch)
-
-        # # 手动遍历 DataLoader 看看输出
-        # for batch in data_loader:
-        #     print("Batch from manual DataLoader:", batch)
-        #     break
-        # input()
         if args.use_peft == True:
             trainer = ModelTrainer(
                 model = model,
@@ -145,22 +127,21 @@ def main(**kwargs):
                 tokenizer = tokenizer,
                 data_collator= train_data_set.collate_batch,
             )  
-        else:
-            trainer = CustomTrainer(
-                model = model,
-                args = args,
-                train_dataset = train_data_set,
-                eval_dataset = eval_dataset_set,
-                tokenizer = tokenizer,
-                data_collator= train_data_set.collate_batch,
-                compute_metrics=compute_metrics,
-                logging_dir = args.logging_dir
-                #save_safetensors=False,
-                #save_strategy = "steps"
-            )  
-        # 从上次保存的检查点继续训练
+        # else:
+        #     trainer = CustomTrainer(
+        #         model = model,
+        #         args = args,
+        #         train_dataset = train_data_set,
+        #         eval_dataset = eval_dataset_set,
+        #         tokenizer = tokenizer,
+        #         data_collator= train_data_set.collate_batch,
+        #         compute_metrics=compute_metrics,
+        #         logging_dir = args.logging_dir
+        #         #save_safetensors=False,
+        #         #save_strategy = "steps"
+        #     )  
         
-
+        # Continue training from the last saved checkpoint
         if args.resume == True:
             trainer.train(resume_from_checkpoint=True)    
         else:

@@ -17,15 +17,12 @@ from transformers import (
 )
 from utils.load_data import processClass
 import transformers 
-#import deepspeed
-#deepspeed.ops.op_builder.CPUAdamBuilder().load()
 from tqdm import tqdm
 from codeTool.utlis.utils import save_data_to_json
 import re
 from torch.cuda.amp import autocast, GradScaler
 #import safetensors
-# 尝试增加头部大小限制
-#safetensors_rust.set_header_size_limit(1024 * 1024)  # 设置头部大小限制为 1MB
+#safetensors_rust.set_header_size_limit(1024 * 1024)  #
 
 B_INST, E_INST = "[INST]", "[/INST]"
 B_SYS, E_SYS = "<<SYS>>\n", "\n<</SYS>>\n\n"
@@ -35,17 +32,12 @@ def load_peft_model(model, peft_model):
     return peft_model
 
 def extract_triple_quotes(text):
-    # 匹配被三引号 ''' 包裹的内容
     pattern = r"```(.*?)```"
-    
-    # 使用 findall 寻找所有匹配的内容
-    matches = re.findall(pattern, text, flags=re.DOTALL)
-    
+    matches = re.findall(pattern, text, flags=re.DOTALL)  
     if matches:
-        # 如果找到匹配的内容，则返回所有被三引号包裹的部分 0为index
         return matches[0]
     else:
-        # 如果没有找到匹配的内容，返回原始文本
+
         return text
     
 def Get_code_content(text):
@@ -58,22 +50,19 @@ def eval(args, model, tokenizer, dataloader):
     eval_list = []
 
  
-    # 生成文本
+    # Generate text
     for step, batch in enumerate(tqdm(dataloader,colour="green", desc="predict Epoch", dynamic_ncols=True)): 
         input_ids=batch['input_ids'].cuda()
         user_id_batch=batch['user_id_batch']
         problem_id_batch=batch['problem_id_batch']
         submission1_id_batch=batch['submission1_id_list']
-        #attention_mask=batch['attention_mask'].cuda()
         with torch.no_grad():
             with autocast():
-                #print(submission1_id_batch[0])
-                #prnt(input_ids.shape)
                 output_sequences = model.generate(input_ids=input_ids, max_new_tokens= (args.max_length/2), pad_token_id = tokenizer.pad_token_id, use_cache=True)
             torch.cuda.empty_cache()
 
         for i in range(0, args.per_device_eval_batch_size):
-            # 解码生成的文本
+            # decode the generated text
             generated_text = tokenizer.decode(output_sequences[i], skip_special_tokens=True)
             user_id = user_id_batch[i]
             problem_id = problem_id_batch[i]
@@ -81,8 +70,7 @@ def eval(args, model, tokenizer, dataloader):
             code_content = Get_code_content(generated_text)
             item = {"user_id":user_id, "problem_id":problem_id, "submission1_id":submission1_id, "code_content": code_content, "origin_generated_text": generated_text.split(E_INST)[1]}#.split(E_INST)[1]
             eval_list.append(item)
-            # print(item['origin_generated_text'])
-            # input()
+ 
     save_filePath =  args.predict_dir
     save_data_to_json(eval_list, save_filePath)
 
@@ -115,11 +103,9 @@ def main(**kwargs):
     
     model.resize_token_embeddings(len(tokenizer))
     model = model.cuda()
-    # 打印模型的词嵌入层和分词器的词汇表大小以验证
     print(f"Model embedding size: {model.get_input_embeddings().weight.size(0)}")
     print(f"Tokenizer vocabulary size: {len(tokenizer)}")
 
-    
    
     # load data
     #---------------------------------------------------------------------------------  

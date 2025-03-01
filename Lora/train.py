@@ -112,10 +112,7 @@ def main(**kwargs):
         )
         peft_config = generate_peft_config(args, kwargs)
         model = get_peft_model(model, peft_config)
-        # 扩展模型的词嵌入层，使其与分词器的词汇表大小一致
         model.resize_token_embeddings(len(tokenizer))
-
-        # 打印模型的词嵌入层和分词器的词汇表大小以验证
         print(f"Model embedding size: {model.get_input_embeddings().weight.size(0)}")
         print(f"Tokenizer vocabulary size: {len(tokenizer)}")
         #model.resize_token_embeddings(model.base_model.model.model.embed_tokens.weight.size(0) + 8)
@@ -128,9 +125,7 @@ def main(**kwargs):
             )
             peft_config = generate_peft_config(args, kwargs)
             model = get_peft_model(model, peft_config)
-            # 扩展模型的词嵌入层，使其与分词器的词汇表大小一致
             model.resize_token_embeddings(len(tokenizer))
-            # 打印模型的词嵌入层和分词器的词汇表大小以验证
             print(f"Model embedding size: {model.get_input_embeddings().weight.size(0)}")
             print(f"Tokenizer vocabulary size: {len(tokenizer)}")
             model = LoraCodeLlama(model).cuda()
@@ -139,9 +134,9 @@ def main(**kwargs):
             
     # on_gpu = all(param.is_cuda for param in model.parameters())
     # if on_gpu:
-    #     print("模型在 GPU 上运行。")
+    #     print("running in GPU。")
     # else:
-    #     print("模型在 CPU 上运行。")
+    #     print("running in CPU")
     # build trainer
     #---------------------------------------------------------------------------------
 
@@ -150,8 +145,6 @@ def main(**kwargs):
                                                                   model=model,
 								model_parameters=model.parameters(), 
                                 config=args.speedjson)
-        
-   
         results = train(
             model,
             train_dataloader,
