@@ -25,7 +25,7 @@ python -m pip install .
 ```
 
 ### Dataset download
-Update as soon as possible...
+you can download dataset from https://huggingface.co/datasets/ZhenlongDai/ACPR.
 #### 1. test cases
 Download it and place it in the directory ./merged_test_cases.
 #### 2. Programming problem file
