@@ -6,7 +6,6 @@ u-RecordMd/
 repairDataset/RepairData-PythonLevel*
 repairDataset/RepairData-PythonLevel-past
 output_dir/*
-predict_dir/*
 output_dir-1/
 predict_evalResult_dir/*
 compare/
@@ -17,3 +16,4 @@ exmaples/
 repairDataset/
 rebuttal_file/
 drawTool/*
+predict_dir_before/*

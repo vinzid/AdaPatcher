@@ -17,7 +17,7 @@ pip install --upgrade transformers
 conda install psutil
 pip install peft
 pip install sentencepiece
-pip install deepspeed=0.14.0
+pip install deepspeed
 
 git clone https://github.com/huggingface/alignment-handbook.git
 cd ./alignment-handbook/
@@ -63,7 +63,7 @@ bash script/pipeline/process_SecondFix.sh
 #### step 2. generate perference data by Program Modifier
 ##### step 2.1. Merge PEFT weights with base LLM weights
 ```
-bash script/DpoTrainer/merge_sft.sh
+bash script/merge_sft.sh
 ```
 
 ##### step 2.2. Adaptive Preference Learning
@@ -78,7 +78,7 @@ You also can directly use perference data "dataNew/FixPerferdataset"
 #### step 3.training Program Modifier with Adaptive Preference Learning
 PerferDATA_FILE="dataNew/FixPerferdataset"
 ```
-bash script/Prefer/process_Prefer_FixModel.sh
+bash script/pipeline/Prefer/process_Prefer_FixModel.sh
 ```
 
 ### Evaluate generated results
@@ -94,4 +94,17 @@ bash script/Postprocessing.sh
 ```
 
 ### Program Modifier and  Bug Locator weight download
-Update as soon as possible...
+1. base Program Modifier
+the file of weight: "./output_dir/loraWeight/fixbycrflp/checkpoint-8000"
+the file of predict result: "./predict_dir/loraWeight/fixbycrflp/test-checkpoint-8000.json"
+2. bug locator
+the file of weight: "output_dir/loraWeight/trace_CRFLP/checkpoint-14000"
+the file of predict result: "./predict_dir/loraWeight/trace_CRFLP/test-checkpoint-14000.json"
+3. Program Modifier with Hybrid Training for Selective Reference
+the file of weight: "./output_dir/loraWeight/fixbycrflp2/checkpoint-12000"
+the file of predict result: "./predict_dir/loraWeight/fixbycrflp2/test-checkpoint-12000.json"
+4. merge_sft
+the file of weight: "./output_dir/fix_codeLlama"
+5. Program Modifier with Adaptive Preference Learning
+the file of weight: "D3V1/checkpoint-1300"
+the file of predict result: "./predict_dir/DpoWeight/DPOP_Fix_ND3V1-GENtest-checkpoint-1300.json"
