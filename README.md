@@ -108,3 +108,14 @@ bash script/Postprocessing.sh
 5. **Program Modifier with Adaptive Preference Learning**<br>
   the file of weight: "./output_dir/DpoWeight/DPOP_Fix_ND3V1/checkpoint-1300"<br>
   the file of predict result: "./predict_dir/DpoWeight/DPOP_Fix_ND3V1-GEN/test-checkpoint-1300.json"
+
+### citation
+BibTeX:
+```
+@article{dai2025less,
+  title={Less is More: Adaptive Program Repair with Bug Localization and Preference Learning},
+  author={Dai, Zhenlong and Chen, Bingrui and Zhao, Zhuoluo and Tang, Xiu and Wu, Sai and Yao, Chang and Gao, Zhipeng and Chen, Jingyuan},
+  journal={arXiv preprint arXiv:2503.06510},
+  year={2025}
+}
+```
