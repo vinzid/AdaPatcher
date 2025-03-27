@@ -29,14 +29,12 @@ you can download dataset from https://huggingface.co/datasets/ZhenlongDai/ACPR.
 #### 1. test cases
 Download it and place it in the directory ./merged_test_cases.
 #### 2. Programming problem file
-Update as soon as possible...
-Problem file in  ./repairDataset/Program_Question_Data/English_Program_Question_StringVersion.json
+Problem file in  "repairDataset/Program_Question_Data/English_Program_Question_StringVersion.json"
 #### 3. train/dev/test file
-Update as soon as possible...
-file in  the directory ./repairDataset/RepairData-PythonLevel/CRFLPDataset/
+file in the directory "repairDataset/RepairData-PythonLevel/CRFLPDataset/"
 
 ### Code execution environment construction
-View codeTool/use.md
+View "codeTool/use.md"
 
 ### LLM weight download
 Please download the pre-trained [CodeLlama-7b-Instruct-hf](https://huggingface.co/codellama/CodeLlama-7b-Instruct-hf) weights from huggingFace and put it in the same directory "./CodeLlama-7b-Instruct-hf".
@@ -94,20 +92,23 @@ bash script/Postprocessing.sh
 ```
 
 ### Program Modifier and Bug Locator weight download
+
+you can download dataset from https://huggingface.co/ZhenlongDai/AdaPatcher.
+
 1. **base Program Modifier**<br>
-  the file of weight: "./output_dir/loraWeight/fixbycrflp/checkpoint-8000" <br>
-  the file of predict result: "./predict_dir/loraWeight/fixbycrflp/test-checkpoint-8000.json"
+  the file of weight: "output_dir/loraWeight/fixbycrflp/checkpoint-8000" <br>
+  the file of predict result: "predict_dir/loraWeight/fixbycrflp/test-checkpoint-8000.json"
 2. **bug locator**<br>
   the file of weight: "output_dir/loraWeight/trace_CRFLP/checkpoint-14000"<br>
-  the file of predict result: "./predict_dir/loraWeight/trace_CRFLP/test-checkpoint-14000.json"
+  the file of predict result: "predict_dir/loraWeight/trace_CRFLP/test-checkpoint-14000.json"
 3. **Program Modifier with Hybrid Training for Selective Reference**<br>
-  the file of weight: "./output_dir/loraWeight/fixbycrflp2/checkpoint-12000"<br>
-  the file of predict result: "./predict_dir/loraWeight/fixbycrflp2/test-checkpoint-12000.json"
+  the file of weight: "output_dir/loraWeight/fixbycrflp2/checkpoint-12000"<br>
+  the file of predict result: "predict_dir/loraWeight/fixbycrflp2/test-checkpoint-12000.json"
 4. **merge_sft**<br>
-  the file of weight: "./output_dir/fix_codeLlama"<br>
+  the file of weight: "output_dir/fix_codeLlama"<br>
 5. **Program Modifier with Adaptive Preference Learning**<br>
-  the file of weight: "./output_dir/DpoWeight/DPOP_Fix_ND3V1/checkpoint-1300"<br>
-  the file of predict result: "./predict_dir/DpoWeight/DPOP_Fix_ND3V1-GEN/test-checkpoint-1300.json"
+  the file of weight: "output_dir/DpoWeight/DPOP_Fix_ND3V1/checkpoint-1300"<br>
+  the file of predict result: "predict_dir/DpoWeight/DPOP_Fix_ND3V1-GEN/test-checkpoint-1300.json"
 
 ### citation
 BibTeX:
