@@ -10,9 +10,10 @@
 1. Git clone our repository
 2. creating conda environment:
 ```shell
-conda create -n LLMenv python=3.8
+conda create -n LLMenv python=3.10
 conda activate LLMenv
 conda install pytorch torchvision torchaudio pytorch-cuda=12.1 -c pytorch -c nvidia
+pip install sympy==1.13.1
 pip install --upgrade transformers
 conda install psutil
 pip install peft
